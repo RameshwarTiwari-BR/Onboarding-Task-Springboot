@@ -19,7 +19,12 @@ A hands-on Java and Spring Boot learning project
 | Day 1 | Java fundamentals, variables, data types, conditions, loops, and methods |
 | Day 2 | Arrays, user input, exception handling, and problem-solving |
 | Day 3 | Object-Oriented Programming, classes, objects, constructors, encapsulation, and static |
-| Day 4 | Interfaces, inheritance, polymorphism, abstraction, and custom exceptions in progress
+| Day 4 | Interfaces, inheritance, polymorphism, abstraction, and custom exceptions in progress |   
+ | Day 5 | JUnit learning and added test for account and payment method |
+| Day 6 | Contact manager, Learn about Array/List/Set/Map |
+| Day 7  | Streams, Optional, lambdas, method references; when a loop is clearer |
+| Day 8 | Dates with java.time, BigDecimal for money, enum, null handling. |
+| Day 9 | Maven lifecycle, pom.xml, dependencies, package hierarchy, logger; configuration |
 
 ## Prerequisites
 
@@ -83,55 +88,6 @@ spring.jpa.properties.hibernate.format_sql=true
 
 Replace `YOUR_PASSWORD` with your PostgreSQL password.
 
-## Project Structure
-
-
-This document explains the folder and package organization of the Spring Boot onboarding project.
-
-## Directory Overview
-
-```text
-Onboarding-Task-Springboot/
-│
-├── .mvn/
-│   └── wrapper/
-│
-├── src/
-│   │
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── learning/
-│   │   │           └── springbootonboarding/
-│   │   │               │
-│   │   │               ├── SpringbootOnboardingApplication.java
-│   │   │               │
-│   │   │               ├── day1/
-│   │   │               ├── day2/
-│   │   │               ├── day3/
-│   │   │               └── day4/
-│   │   │
-│   │   └── resources/
-│   │       └── application.properties
-│   │
-│   └── test/
-│       └── java/
-│           └── com/
-│               └── learning/
-│                   └── springbootonboarding/
-│                       ├── day3/
-│                       └── day4/
-│
-├── .gitignore
-├── .gitattributes
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-├── README.md
-└── PROJECT_STRUCTURE.md
-```
-
-*Note: This is the intended organization. Add or remove package directories as the project evolves.*
 
 ## Root Directory
 
