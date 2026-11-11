@@ -5,12 +5,14 @@ public class Employee {
     private final long salary;
     private final String department;
 
+//    Constructor for employee
     public Employee(String name, long salary, String department) {
         this.name = name;
         this.salary = salary;
         this.department = department;
     }
 
+//    Encapsulation getter+setter
     public String getName(){
         return name;
     }

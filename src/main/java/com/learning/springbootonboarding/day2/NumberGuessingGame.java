@@ -76,6 +76,7 @@ public class NumberGuessingGame {
         // System.out.print(guess);
 
         // Stop the method if input is invalid
+
         if (guess == -1) {
             return;
         }
