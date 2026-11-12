@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: springboot-onboarding
+
+  # PostgreSQL Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/springboot_onboarding
+    username: postgres
+    password: MyStrongPass123
+
+  # Hibernate / JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Logging
+logging:
+  file:
+    name: logs/springboot-onboarding.log
+  level:
+    # 1. Enable detailed web logging
+    "org.springframework.web": DEBUG
+    # 2. Log exactly what data comes into your request interceptors
+    "org.springframework.web.servlet.DispatcherServlet": DEBUG
+  pattern:
+    # 3. Formatter for terminal logging and file
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%X{requestId}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%X{requestId}] %logger{36} - %msg%n"
