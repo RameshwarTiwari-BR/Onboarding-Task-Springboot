@@ -11,6 +11,7 @@ public class ApiEndPoints {
     public static final String HEALTH_V1 = V1 + "/health";
 
     //    Day 12- Task Crud
-    public static final String TASK_V1 = V1 + "/task";
+    public static final String TASK_V1 = V1 + "/tasks";
+    public static final String PROJECT_V1 = V1 + "/projects";
 
 }

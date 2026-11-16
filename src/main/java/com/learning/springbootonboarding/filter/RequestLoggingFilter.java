@@ -8,20 +8,16 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class RequestLoggingFilter implements Filter {
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(RequestLoggingFilter.class);
 
     @Override
     public void doFilter(
@@ -45,7 +41,7 @@ public class RequestLoggingFilter implements Filter {
         long startTime = System.nanoTime();
 
         try {
-            logger.info("Request started: {} {}",
+            log.info("Request started: {} {}",
                     httpRequest.getMethod(),
                     httpRequest.getRequestURI());
 
@@ -55,7 +51,7 @@ public class RequestLoggingFilter implements Filter {
         } finally {
             long duration = (System.nanoTime() - startTime) / 1_000_000;
 
-            logger.info("Request completed: {} {} | Status: {} | Duration: {} ms",
+            log.info("Request completed: {} {} | Status: {} | Duration: {} ms",
                     httpRequest.getMethod(),
                     httpRequest.getRequestURI(),
                     httpResponse.getStatus(),

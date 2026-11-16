@@ -9,9 +9,13 @@ spring:
     password: MyStrongPass123
 
   # Hibernate / JPA Configuration
+  sql:
+    init:
+      mode: always
   jpa:
+    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -22,6 +26,9 @@ logging:
   file:
     name: logs/springboot-onboarding.log
   level:
+    org:
+      hibernate:
+        SQL=DEBUG:
     # 1. Enable detailed web logging
     "org.springframework.web": DEBUG
     # 2. Log exactly what data comes into your request interceptors

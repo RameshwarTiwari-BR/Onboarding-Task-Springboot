@@ -1,62 +1,121 @@
 package com.learning.springbootonboarding.day12.service;
 
+import com.learning.springbootonboarding.day12.dto.TaskRequest;
+import com.learning.springbootonboarding.day12.dto.TaskResponse;
+import com.learning.springbootonboarding.day12.model.Project;
 import com.learning.springbootonboarding.day12.model.Task;
+import com.learning.springbootonboarding.day12.model.TaskStatus;
+import com.learning.springbootonboarding.day12.repository.ProjectRepository;
+import com.learning.springbootonboarding.day12.repository.TaskRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class TaskService {
 
-    // Thread-safe in-memory map to store tasks instead of a physical DB - Day 12
-    private final Map<Long, Task> taskStorage = new ConcurrentHashMap<>();
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
-    // Thread-safe ID auto-incrementer, Using this because if 2 user request cant create same id, This Provide getAndIncrement
-    private final AtomicLong idCounter = new AtomicLong(1);
 
-    // 1. Create a task
-    public Task createTask(String name) {
-        Long id = idCounter.getAndIncrement();
-        Task newTask = new Task(id, name, false, LocalDateTime.now());
-        taskStorage.put(id, newTask);
-        return newTask;
+
+    @Transactional
+    public TaskResponse createTask(Long projectId, TaskRequest request) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
+
+        Task task = new Task(
+                request.title(),
+                request.description(),
+                request.status(),
+                request.priority(),
+                project,
+                request.dueDate()
+        );
+
+        Task saved = taskRepository.save(task);
+        return toResponse(saved);
     }
 
-    // 2. List all tasks
-    public List<Task> getAllTasks() {
-        return new ArrayList<>(taskStorage.values());
-    }
-
-    // 3. Get task by ID
-    public Optional<Task> getTaskById(Long id) {
-        return Optional.ofNullable(taskStorage.get(id));
-    }
-
-//    4. Update task status by ID
-    public Optional<Task> updateTaskStatus(Long id, boolean newStatus){
-        Task task = taskStorage.get(id);
-        if(task!=null){
-            task.setStatus(newStatus);
-            task.setTimestamp(LocalDateTime.now());
-            return Optional.of(task);
+    public List<TaskResponse> getTasksByProject(Long projectId, TaskStatus status) {
+        if (!projectRepository.existsById(projectId)) {
+            throw new EntityNotFoundException("Project not found with id: " + projectId);
         }
-        return Optional.empty();
+
+        List<Task> tasks = (status != null)
+                ? taskRepository.findByProjectIdAndStatus(projectId, status)
+                : taskRepository.findByProjectId(projectId);
+
+        return tasks.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-//    Delete Task By ID
-    public Optional<Task> deleteTask(Long id){
-        Task task = taskStorage.get(id);
-        if(task!=null){
-            taskStorage.remove(id);
-            return Optional.of(task);
+    @Transactional
+    public TaskResponse updateTask(Long taskId, TaskRequest request) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + taskId));
+
+        task.setTitle(request.title());
+        task.setDescription(request.description());
+        if (request.status() != null) {
+            task.setStatus(request.status());
         }
-        return  Optional.empty();
+        if (request.priority() != null) {
+            task.setPriority(request.priority());
+        }
+        task.setDueDate(request.dueDate());
+
+        // No explicit save() needed inside @Transactional; Hibernate auto-flushes dirty changes
+        return toResponse(task);
     }
 
+    @Transactional
+    public void deleteTask(Long taskId) {
+        if (!taskRepository.existsById(taskId)) {
+            throw new EntityNotFoundException("Task not found with id: " + taskId);
+        }
+        taskRepository.deleteById(taskId);
+    }
+
+    public Page<TaskResponse> getAllTask(int page, int size, String sortBy, String sortDir, TaskStatus status) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(safePage, safeSize, sort);
+
+        // Filter if status is provided, otherwise return all tasks
+        Page<Task> taskPage = (status != null)
+                ? taskRepository.findALlTaskByStatus(status, pageable)
+                : taskRepository.findAll(pageable);
+
+        return taskPage.map(this::toResponse);
+    }
+
+
+    private TaskResponse toResponse(Task task) {
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus(),
+                task.getPriority(),
+                task.getProject().getId(),
+                task.getCreatedAt(),
+                task.getDueDate()
+        );
+    }
 }
