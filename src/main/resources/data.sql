@@ -1,35 +1,118 @@
--- 1. Insert projects only if they do not already exist
-INSERT INTO projects (name)
-SELECT 'Spring Boot Onboarding'
-    WHERE NOT EXISTS (SELECT 1 FROM projects WHERE name = 'Spring Boot Onboarding');
 
-INSERT INTO projects (name)
-SELECT 'Task Management API'
-    WHERE NOT EXISTS (SELECT 1 FROM projects WHERE name = 'Task Management API');
+-- =====================================================
+-- 1. CREATE DUMMY USER
+-- =====================================================
 
--- 2. Insert 10 tasks only if the tasks table is currently empty
-INSERT INTO tasks (title, description, status, priority, project_id, due_date)
-SELECT * FROM (
-                  VALUES
-                      ('Set up PostgreSQL database', 'Configure local DB and application.yml', 'COMPLETED', 'HIGH',
-                       (SELECT id FROM projects WHERE name = 'Spring Boot Onboarding' LIMIT 1), NOW() + INTERVAL '1 day'),
-              ('Configure MapStruct', 'Replace manual DTO mapping methods', 'COMPLETED', 'MEDIUM',
-            (SELECT id FROM projects WHERE name = 'Spring Boot Onboarding' LIMIT 1), NOW() + INTERVAL '2 days'),
-              ('Implement Global Exception Handler', 'Add @RestControllerAdvice for clean errors', 'IN_PROGRESS', 'HIGH',
-            (SELECT id FROM projects WHERE name = 'Spring Boot Onboarding' LIMIT 1), NOW() + INTERVAL '3 days'),
-              ('Add Request Validation', 'Use @Valid and Jakarta annotations on DTOs', 'PENDING', 'MEDIUM',
-            (SELECT id FROM projects WHERE name = 'Spring Boot Onboarding' LIMIT 1), NOW() + INTERVAL '5 days'),
-              ('Write Unit Tests for TaskService', 'Cover service logic with JUnit 5 and Mockito', 'PENDING', 'LOW',
-            (SELECT id FROM projects WHERE name = 'Spring Boot Onboarding' LIMIT 1), NOW() + INTERVAL '7 days'),
-              ('Design REST Endpoints', 'Define GET, POST, PUT, DELETE routes', 'COMPLETED', 'HIGH',
-            (SELECT id FROM projects WHERE name = 'Task Management API' LIMIT 1), NOW() + INTERVAL '1 day'),
-              ('Add Pagination and Sorting', 'Use Pageable in TaskController', 'IN_PROGRESS', 'MEDIUM',
-            (SELECT id FROM projects WHERE name = 'Task Management API' LIMIT 1), NOW() + INTERVAL '4 days'),
-              ('Implement Optimistic Locking', 'Add @Version field to Task entity', 'PENDING', 'LOW',
-            (SELECT id FROM projects WHERE name = 'Task Management API' LIMIT 1), NOW() + INTERVAL '6 days'),
-              ('Configure SLF4J File Logging', 'Verify logs/springboot-onboarding.log output', 'COMPLETED', 'LOW',
-            (SELECT id FROM projects WHERE name = 'Task Management API' LIMIT 1), NOW() + INTERVAL '2 days'),
-              ('Dockerize Spring Boot App', 'Create Dockerfile and docker-compose.yml', 'PENDING', 'HIGH',
-            (SELECT id FROM projects WHERE name = 'Task Management API' LIMIT 1), NOW() + INTERVAL '10 days')
-    ) AS seed(title, description, status, priority, project_id, due_date)
-WHERE NOT EXISTS (SELECT 1 FROM tasks);
+INSERT INTO users (
+    id,
+    email,
+    first_name,
+    last_name,
+    status
+)
+VALUES (
+           '11111111-1111-4111-8111-111111111111',
+           'ramesh@example.com',
+           'Ramesh',
+           'Tiwari',
+           'ACTIVE'
+       );
+
+
+-- =====================================================
+-- 2. CREATE PROJECT
+-- =====================================================
+
+INSERT INTO projects (
+    id,
+    name,
+    created_by
+)
+VALUES (
+           '22222222-2222-4222-8222-222222222222',
+           'Spring Boot Task Management',
+           '11111111-1111-4111-8111-111111111111'
+       );
+
+
+-- =====================================================
+-- 3. ADD PROJECT OWNER
+-- =====================================================
+
+INSERT INTO project_members (
+    project_id,
+    user_id,
+    role
+)
+VALUES (
+           '22222222-2222-4222-8222-222222222222',
+           '11111111-1111-4111-8111-111111111111',
+           'OWNER'
+       );
+
+
+-- =====================================================
+-- 4. CREATE FIVE DUMMY TASKS
+-- =====================================================
+
+INSERT INTO tasks (
+    title,
+    description,
+    status,
+    priority,
+    project_id,
+    created_by,
+    assigned_to,
+    due_date
+)
+VALUES
+    (
+        'Configure Spring Security',
+        'Set up SecurityFilterChain and configure public and protected endpoints.',
+        'COMPLETED',
+        'HIGH',
+        '22222222-2222-4222-8222-222222222222',
+        '11111111-1111-4111-8111-111111111111',
+        '11111111-1111-4111-8111-111111111111',
+        CURRENT_TIMESTAMP + INTERVAL '1 day'
+    ),
+    (
+        'Implement User Registration',
+        'Create signup API with email validation and secure password hashing.',
+        'IN_PROGRESS',
+        'HIGH',
+        '22222222-2222-4222-8222-222222222222',
+        '11111111-1111-4111-8111-111111111111',
+        '11111111-1111-4111-8111-111111111111',
+        CURRENT_TIMESTAMP + INTERVAL '3 days'
+    ),
+    (
+        'Implement JWT Authentication',
+        'Generate short-lived JWT access tokens and validate incoming bearer tokens.',
+        'PENDING',
+        'HIGH',
+        '22222222-2222-4222-8222-222222222222',
+        '11111111-1111-4111-8111-111111111111',
+        NULL,
+        CURRENT_TIMESTAMP + INTERVAL '5 days'
+    ),
+    (
+        'Create Refresh Token API',
+        'Implement refresh token storage, rotation, expiration and revocation.',
+        'PENDING',
+        'MEDIUM',
+        '22222222-2222-4222-8222-222222222222',
+        '11111111-1111-4111-8111-111111111111',
+        NULL,
+        CURRENT_TIMESTAMP + INTERVAL '7 days'
+    ),
+    (
+        'Write Integration Tests',
+        'Test registration, login, authentication and protected REST endpoints.',
+        'PENDING',
+        'LOW',
+        '22222222-2222-4222-8222-222222222222',
+        '11111111-1111-4111-8111-111111111111',
+        NULL,
+        CURRENT_TIMESTAMP + INTERVAL '10 days'
+    );
