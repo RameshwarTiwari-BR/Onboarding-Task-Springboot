@@ -1,6 +1,7 @@
 package com.learning.springbootonboarding.exceptions;
 
 import com.learning.springbootonboarding.day12.dto.ApiErrorResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -65,7 +66,39 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorPayload, HttpStatus.CONFLICT);
     }
 
-    // 3. Catch generic fallback system errors (RuntimeException, Database crashes)
+    // 3. Catch EntityNotFoundException (missing Project or Task IDs) -> 404 Not Found
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        String requestId = MDC.get("requestId");
+
+        ApiErrorResponse errorPayload = new ApiErrorResponse(
+                HttpStatus.NOT_FOUND.value(), // 404
+                ex.getMessage(),
+                LocalDateTime.now().toString(),
+                requestId,
+                null
+        );
+
+        return new ResponseEntity<>(errorPayload, HttpStatus.NOT_FOUND);
+    }
+
+
+    // 4. IllegalArgumentException
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex){
+        String requestId = MDC.get("requestId");
+
+        ApiErrorResponse errorPayload = new ApiErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now().toString(),
+                requestId,
+                null
+        );
+        return new ResponseEntity<>(errorPayload, HttpStatus.BAD_REQUEST);
+    }
+
+    // 4. Catch generic fallback system errors (RuntimeException, Database crashes)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericErrors(Exception ex) {
         String requestId = MDC.get("requestId");
