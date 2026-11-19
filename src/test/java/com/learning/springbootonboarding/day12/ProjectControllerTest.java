@@ -1,3 +1,4 @@
+
 package com.learning.springbootonboarding.day12;
 
 import com.learning.springbootonboarding.constants.ApiEndPoints;
@@ -9,7 +10,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;// Or org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest in Boot 4
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -24,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProjectController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ProjectControllerTest {
 
     @Autowired
@@ -38,22 +42,32 @@ class ProjectControllerTest {
     @Test
     @DisplayName("POST - Returns 201 Created when valid")
     void createProject_Returns201() throws Exception {
-        ProjectRequest request = new ProjectRequest("New Project");
-        ProjectResponse response = new ProjectResponse(1L, "New Project", Instant.now());
 
-        when(projectService.createProject(any(ProjectRequest.class))).thenReturn(response);
+        UUID projectId = UUID.randomUUID();
+
+        ProjectRequest request = new ProjectRequest("New Project");
+
+        ProjectResponse response = new ProjectResponse(
+                projectId,
+                "New Project",
+                Instant.now()
+        );
+
+        when(projectService.createProject(any(ProjectRequest.class)))
+                .thenReturn(response);
 
         mockMvc.perform(post(ApiEndPoints.PROJECT_V1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(projectId.toString()))
                 .andExpect(jsonPath("$.name").value("New Project"));
     }
 
     @Test
     @DisplayName("POST - Returns 400 Bad Request when validation fails")
     void createProject_BlankName_Returns400() throws Exception {
+
         ProjectRequest invalidRequest = new ProjectRequest("");
 
         mockMvc.perform(post(ApiEndPoints.PROJECT_V1)
@@ -66,6 +80,7 @@ class ProjectControllerTest {
     @Test
     @DisplayName("POST - Returns 409 Conflict on duplicate name")
     void createProject_Duplicate_Returns409() throws Exception {
+
         ProjectRequest request = new ProjectRequest("Duplicate");
 
         when(projectService.createProject(any(ProjectRequest.class)))
@@ -81,7 +96,10 @@ class ProjectControllerTest {
     @Test
     @DisplayName("DELETE /{id} - Returns 204 No Content")
     void deleteProject_Returns204() throws Exception {
-        mockMvc.perform(delete(ApiEndPoints.PROJECT_V1 + "/1"))
+
+        UUID projectId = UUID.randomUUID();
+
+        mockMvc.perform(delete(ApiEndPoints.PROJECT_V1 + "/" + projectId))
                 .andExpect(status().isNoContent());
     }
 
@@ -89,10 +107,12 @@ class ProjectControllerTest {
     @DisplayName("GET /{id} - Returns 404 Not Found when missing")
     void getProjectById_NotFound_Returns404() throws Exception {
 
-        when(projectService.getProjectById(99L))
+        UUID projectId = UUID.randomUUID();
+
+        when(projectService.getProjectById(projectId))
                 .thenThrow(new EntityNotFoundException("Project not found"));
 
-        mockMvc.perform(get(ApiEndPoints.PROJECT_V1 + "/99"))
+        mockMvc.perform(get(ApiEndPoints.PROJECT_V1 + "/" + projectId))
                 .andExpect(status().isNotFound());
     }
 }

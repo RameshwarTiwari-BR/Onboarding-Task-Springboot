@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.learning.springbootonboarding.day12.model.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class TaskController {
 
     @PostMapping(ApiEndPoints.PROJECT_V1 + "/{projectId}/tasks")
     public ResponseEntity<TaskResponse> createTask(
-            @PathVariable Long projectId,
+            @PathVariable UUID projectId,
             @Valid @RequestBody TaskRequest request
     ) {
         TaskResponse created = taskService.createTask(projectId, request);
@@ -33,7 +34,7 @@ public class TaskController {
 
     @GetMapping(ApiEndPoints.PROJECT_V1 + "/{projectId}/tasks")
     public ResponseEntity<List<TaskResponse>> getTasksByProject(
-            @PathVariable Long projectId,
+            @PathVariable UUID projectId,
             @RequestParam(required = false) TaskStatus status
     ) {
         return ResponseEntity.ok(taskService.getTasksByProject(projectId, status));
@@ -41,14 +42,14 @@ public class TaskController {
 
     @PutMapping(ApiEndPoints.TASK_V1 + "/{taskId}")
     public ResponseEntity<TaskResponse> updateTask(
-            @PathVariable Long taskId,
+            @PathVariable UUID taskId,
             @Valid @RequestBody TaskRequest request
     ) {
         return ResponseEntity.ok(taskService.updateTask(taskId, request));
     }
 
     @DeleteMapping(ApiEndPoints.TASK_V1 + "/{taskId}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
+    public ResponseEntity<Void> deleteTask(@PathVariable UUID taskId) {
         taskService.deleteTask(taskId);
         return ResponseEntity.noContent().build();
     }

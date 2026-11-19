@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -29,7 +30,7 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponse createTask(Long projectId, TaskRequest request) {
+    public TaskResponse createTask(UUID projectId, TaskRequest request) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
 
@@ -46,7 +47,7 @@ public class TaskService {
         return toResponse(saved);
     }
 
-    public List<TaskResponse> getTasksByProject(Long projectId, TaskStatus status) {
+    public List<TaskResponse> getTasksByProject(UUID projectId, TaskStatus status) {
         if (!projectRepository.existsById(projectId)) {
             throw new EntityNotFoundException("Project not found with id: " + projectId);
         }
@@ -61,7 +62,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponse updateTask(Long taskId, TaskRequest request) {
+    public TaskResponse updateTask(UUID taskId, TaskRequest request) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + taskId));
 
@@ -80,7 +81,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long taskId) {
+    public void deleteTask(UUID taskId) {
         if (!taskRepository.existsById(taskId)) {
             throw new EntityNotFoundException("Task not found with id: " + taskId);
         }

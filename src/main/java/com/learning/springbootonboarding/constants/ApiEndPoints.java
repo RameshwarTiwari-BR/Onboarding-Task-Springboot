@@ -14,4 +14,6 @@ public class ApiEndPoints {
     public static final String TASK_V1 = V1 + "/tasks";
     public static final String PROJECT_V1 = V1 + "/projects";
 
+    public static final String USERS_V1 = V1 + "/users";
+
 }

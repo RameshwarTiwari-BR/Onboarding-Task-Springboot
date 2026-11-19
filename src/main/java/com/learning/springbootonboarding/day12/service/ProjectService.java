@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -40,14 +41,14 @@ public class ProjectService {
                 .toList();
     }
 
-    public ProjectResponse getProjectById(Long id) {
+    public ProjectResponse getProjectById(UUID id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
         return toResponse(project);
     }
 
     @Transactional
-    public void deleteProject(Long id) {
+    public void deleteProject(UUID id) {
         if (!projectRepository.existsById(id)) {
             throw new EntityNotFoundException("Project not found with id: " + id);
         }
@@ -55,7 +56,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public Project updateProject(Long id, Project project){
+    public Project updateProject(UUID id, Project project){
         Project existingProject = projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Project Id not found" + id));
         existingProject.setName(project.getName());
 

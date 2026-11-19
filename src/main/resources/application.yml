@@ -1,4 +1,3 @@
-
 spring:
   application:
     name: springboot-onboarding
@@ -6,10 +5,27 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/springboot_onboarding
     username: postgres
-    password: MyStrongPassword123
+    password: SpringSecure123
 
   flyway:
     enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/Onboarding
+      client:
+        registration:
+          keycloak-admin:
+            provider: keycloak
+            client-id: onboarding-admin
+            client-secret: 2L62rIvdNdKduaEefBuuKT9BK5mXYCRWhwmTrQ2fHL8xmi3LH6cWJBwie3vuuXxvtfYM3i5cQzDyqad5CsjU0Q
+            authorization-grant-type: client_credentials
+            scope: kc-admin-api
+        provider:
+          keycloak:
+            token-uri: http://localhost:8081/realms/Onboarding/protocol/openid-connect/token
 
   jpa:
     hibernate:
@@ -18,6 +34,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+keycloak:
+  admin:
+    base-url: http://localhost:8081
+    realm: Onboarding
+    issuer: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}
+    login-client-id: <YOUR_FRONTEND_CLIENT_ID>
 
 logging:
   file:
