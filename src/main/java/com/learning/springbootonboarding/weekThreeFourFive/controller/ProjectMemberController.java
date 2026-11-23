@@ -1,9 +1,9 @@
-package com.learning.springbootonboarding.day12.controller;
+package com.learning.springbootonboarding.weekThreeFourFive.controller;
 
 import com.learning.springbootonboarding.constants.ApiEndPoints;
-import com.learning.springbootonboarding.day12.dto.AddProjectMemberRequest;
-import com.learning.springbootonboarding.day12.dto.ProjectMemberResponse;
-import com.learning.springbootonboarding.day12.service.ProjectMemberService;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.AddProjectMemberRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.ProjectMemberResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.service.ProjectMemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

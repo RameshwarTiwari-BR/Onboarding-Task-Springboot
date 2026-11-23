@@ -1,6 +1,6 @@
-package com.learning.springbootonboarding.day12.dto;
+package com.learning.springbootonboarding.weekThreeFourFive.dto;
 
-import com.learning.springbootonboarding.day12.model.UserStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.model.UserStatus;
 
 import java.time.Instant;
 import java.util.UUID;

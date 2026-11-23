@@ -1,11 +1,11 @@
 
-package com.learning.springbootonboarding.day12;
+package com.learning.springbootonboarding.weekThreeFourFive;
 
-import com.learning.springbootonboarding.day12.dto.ProjectRequest;
-import com.learning.springbootonboarding.day12.dto.ProjectResponse;
-import com.learning.springbootonboarding.day12.model.Project;
-import com.learning.springbootonboarding.day12.repository.ProjectRepository;
-import com.learning.springbootonboarding.day12.service.ProjectService;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.ProjectRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.ProjectResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.Project;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.ProjectRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.service.ProjectService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

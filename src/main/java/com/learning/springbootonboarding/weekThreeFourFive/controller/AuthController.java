@@ -1,19 +1,17 @@
-package com.learning.springbootonboarding.day12.controller;
+package com.learning.springbootonboarding.weekThreeFourFive.controller;
 
 import com.learning.springbootonboarding.constants.ApiEndPoints;
-import com.learning.springbootonboarding.day12.dto.CreateUserDto;
-import com.learning.springbootonboarding.day12.dto.LoginRequest;
-import com.learning.springbootonboarding.day12.dto.TokenResponse;
-import com.learning.springbootonboarding.day12.dto.UserResponse;
-import com.learning.springbootonboarding.day12.service.KeycloakAdminService;
-import com.learning.springbootonboarding.day12.service.UserService;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.*;
+import com.learning.springbootonboarding.weekThreeFourFive.service.KeycloakAdminService;
+import com.learning.springbootonboarding.weekThreeFourFive.service.TokenBlackListService;
+import com.learning.springbootonboarding.weekThreeFourFive.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
-import static com.learning.springbootonboarding.constants.ApiEndPoints.AUTH_LOGIN_V1;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +19,7 @@ public class AuthController {
 
     private final KeycloakAdminService keycloakAdminService;
     private final UserService userService;
+    private final TokenBlackListService tokenBlackListService;
 
     @PostMapping(ApiEndPoints.AUTH_LOGIN_V1)
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -39,5 +38,18 @@ public class AuthController {
     ){
         UserResponse created = userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping(ApiEndPoints.AUTH_LOGOUT_V1)
+    public ResponseEntity<Void> logoutUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid
+            @RequestBody LogoutRequest request
+    ){
+        keycloakAdminService.LogoutUser(request.refreshToken());
+        if (jwt != null) {
+            tokenBlackListService.blackList(jwt.getId(), jwt.getExpiresAt());
+        }
+        return  ResponseEntity.noContent().build();
     }
 }

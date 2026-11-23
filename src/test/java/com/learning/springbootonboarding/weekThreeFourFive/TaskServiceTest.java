@@ -1,13 +1,13 @@
 
-package com.learning.springbootonboarding.day12;
+package com.learning.springbootonboarding.weekThreeFourFive;
 
-import com.learning.springbootonboarding.day12.dto.TaskRequest;
-import com.learning.springbootonboarding.day12.dto.TaskResponse;
-import com.learning.springbootonboarding.day12.model.*;
-import com.learning.springbootonboarding.day12.repository.ProjectRepository;
-import com.learning.springbootonboarding.day12.repository.TaskRepository;
-import com.learning.springbootonboarding.day12.service.CurrentUserService;
-import com.learning.springbootonboarding.day12.service.TaskService;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.*;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.ProjectRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.TaskRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.service.CurrentUserService;
+import com.learning.springbootonboarding.weekThreeFourFive.service.TaskService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -211,12 +211,22 @@ class TaskServiceTest {
     @Test
     @DisplayName("Delete Task - Success")
     void deleteTask_Success() {
-
         // Arrange
         UUID taskId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-        when(taskRepository.existsById(taskId))
-                .thenReturn(true);
+        // 1. Create and mock the current user
+        User mockUser = new User();
+        mockUser.setId(userId);
+        when(currentUserService.getCurrentUser()).thenReturn(mockUser);
+
+        // 2. Create and mock the task owned by that user
+        Task mockTask = new Task();
+        mockTask.setId(taskId);
+        mockTask.setCreatedBy(userId); // Pass mockUser instead if createdBy is a User object
+
+        when(taskRepository.existsById(taskId)).thenReturn(true);
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(mockTask));
 
         // Act
         taskService.deleteTask(taskId);
@@ -224,6 +234,7 @@ class TaskServiceTest {
         // Assert
         verify(taskRepository, times(1)).deleteById(taskId);
     }
+
 
     @Test
     @DisplayName("Delete Task - Rejected when Task ID does not exist")

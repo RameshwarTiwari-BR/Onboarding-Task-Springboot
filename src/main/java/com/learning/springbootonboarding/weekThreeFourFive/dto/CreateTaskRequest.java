@@ -1,4 +1,4 @@
-package com.learning.springbootonboarding.day12.dto;
+package com.learning.springbootonboarding.weekThreeFourFive.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

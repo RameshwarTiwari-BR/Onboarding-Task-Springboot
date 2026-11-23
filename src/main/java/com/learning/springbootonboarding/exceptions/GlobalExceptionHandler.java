@@ -1,15 +1,18 @@
 package com.learning.springbootonboarding.exceptions;
 
-import com.learning.springbootonboarding.day12.dto.ApiErrorResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.ApiErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -97,6 +100,55 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorPayload, HttpStatus.BAD_REQUEST);
     }
+
+    // 5. Catch ResponseStatusException (401, 403, 409, etc.) and preserve its exact HTTP status
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
+        String requestId = MDC.get("requestId");
+        String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+
+        ApiErrorResponse errorPayload = new ApiErrorResponse(
+                ex.getStatusCode().value(),
+                message,
+                LocalDateTime.now().toString(),
+                requestId,
+                null
+        );
+
+        return new ResponseEntity<>(errorPayload, ex.getStatusCode());
+    }
+
+
+    @ExceptionHandler(RestClientResponseException.class)
+    public ResponseEntity<ApiErrorResponse> handleRestClientException(RestClientResponseException ex) {
+        String requestId = MDC.get("requestId");
+
+        ApiErrorResponse errorPayload = new ApiErrorResponse(
+                ex.getStatusCode().value(),
+                "Authentication service error",
+                LocalDateTime.now().toString(),
+                requestId,
+                null
+        );
+
+        return new ResponseEntity<>(errorPayload, ex.getStatusCode());
+    }
+
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException ex){
+        String requestId = MDC.get("requestId");
+
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+               HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                LocalDateTime.now().toString(),
+                requestId,
+                null
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
 
     // 4. Catch generic fallback system errors (RuntimeException, Database crashes)
     @ExceptionHandler(Exception.class)

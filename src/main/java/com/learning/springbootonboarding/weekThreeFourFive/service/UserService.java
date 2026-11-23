@@ -1,14 +1,13 @@
-package com.learning.springbootonboarding.day12.service;
+package com.learning.springbootonboarding.weekThreeFourFive.service;
 
-import com.learning.springbootonboarding.day12.dto.CreateUserDto;
-import com.learning.springbootonboarding.day12.dto.TokenResponse;
-import com.learning.springbootonboarding.day12.dto.UserResponse;
-import com.learning.springbootonboarding.day12.model.User;
-import com.learning.springbootonboarding.day12.model.UserIdentity;
-import com.learning.springbootonboarding.day12.repository.UserIdentityRepository;
-import com.learning.springbootonboarding.day12.repository.UserRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.CreateUserDto;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TokenResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.UserResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.model.UserIdentity;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.UserIdentityRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

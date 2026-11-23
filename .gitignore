@@ -32,3 +32,10 @@ logs/
 
 ### VS Code ###
 .vscode/
+
+# env
+.env
+./.env
+
+./KeyCloakDetails.md
+./KeyCloak.md

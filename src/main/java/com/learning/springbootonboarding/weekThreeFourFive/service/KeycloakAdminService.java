@@ -1,7 +1,7 @@
-package com.learning.springbootonboarding.day12.service;
+package com.learning.springbootonboarding.weekThreeFourFive.service;
 
-import com.learning.springbootonboarding.day12.dto.CreateUserDto;
-import com.learning.springbootonboarding.day12.dto.TokenResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.CreateUserDto;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TokenResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -111,6 +111,25 @@ public class KeycloakAdminService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+//    Logout
+    public void LogoutUser(String refreshToken){
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", loginClientId);
+        formData.add("refresh_token", refreshToken.trim());
+
+        try {
+            publicRestClient.post().uri("/protocol/openid-connect/logout")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(formData)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException.BadRequest ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid or already expired refresh token");
+        };
     }
 
 

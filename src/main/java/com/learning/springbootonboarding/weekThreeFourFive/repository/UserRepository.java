@@ -1,7 +1,7 @@
 
-package com.learning.springbootonboarding.day12.repository;
+package com.learning.springbootonboarding.weekThreeFourFive.repository;
 
-import com.learning.springbootonboarding.day12.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

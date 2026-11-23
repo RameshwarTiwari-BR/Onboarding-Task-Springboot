@@ -1,7 +1,10 @@
-package com.learning.springbootonboarding.day12.dto;
+package com.learning.springbootonboarding.weekThreeFourFive.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Map;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiErrorResponse (
     int statusCode,
     String message,

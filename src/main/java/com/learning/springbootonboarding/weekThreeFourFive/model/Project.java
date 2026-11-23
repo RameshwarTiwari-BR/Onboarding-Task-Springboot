@@ -1,4 +1,4 @@
-package com.learning.springbootonboarding.day12.model;
+package com.learning.springbootonboarding.weekThreeFourFive.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

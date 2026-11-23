@@ -1,9 +1,9 @@
-package com.learning.springbootonboarding.day12.service;
+package com.learning.springbootonboarding.weekThreeFourFive.service;
 
-import com.learning.springbootonboarding.day12.model.User;
-import com.learning.springbootonboarding.day12.model.UserIdentity;
-import com.learning.springbootonboarding.day12.model.UserStatus;
-import com.learning.springbootonboarding.day12.repository.UserIdentityRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.model.UserIdentity;
+import com.learning.springbootonboarding.weekThreeFourFive.model.UserStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.UserIdentityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import java.util.UUID;
 
 @Service
@@ -21,9 +22,15 @@ import java.util.UUID;
 public class CurrentUserService {
 
     private final UserIdentityRepository userIdentityRepository;
+//    private final TokenBlackListService tokenBlackListService;
 
     public User getCurrentUser() {
         Jwt jwt = getJwt();
+
+//        if (tokenBlackListService.isBlackListed(jwt.getId())) {
+//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token has been revoked");
+//        }  if anyone service not calling this method- bypass access token immediate check
+
         String issuer = jwt.getIssuer().toString();
         String subject = jwt.getSubject();
 

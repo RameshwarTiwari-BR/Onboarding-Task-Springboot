@@ -1,19 +1,20 @@
-package com.learning.springbootonboarding.day12.service;
+package com.learning.springbootonboarding.weekThreeFourFive.service;
 
-import com.learning.springbootonboarding.day12.dto.TaskRequest;
-import com.learning.springbootonboarding.day12.dto.TaskResponse;
-import com.learning.springbootonboarding.day12.model.Project;
-import com.learning.springbootonboarding.day12.model.Task;
-import com.learning.springbootonboarding.day12.model.TaskStatus;
-import com.learning.springbootonboarding.day12.model.User;
-import com.learning.springbootonboarding.day12.repository.ProjectRepository;
-import com.learning.springbootonboarding.day12.repository.TaskRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.Project;
+import com.learning.springbootonboarding.weekThreeFourFive.model.Task;
+import com.learning.springbootonboarding.weekThreeFourFive.model.TaskStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.ProjectRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,23 +97,21 @@ public class TaskService {
     public void deleteTask(UUID taskId) {
         User currentUser = currentUserService.getCurrentUser();
 
-        if (!taskRepository.existsById(taskId)) {
-            throw new EntityNotFoundException("Task not found with id: " + taskId);
-        }
-//        find task
-        Optional<Task> tasks = taskRepository.findById(taskId);
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + taskId));
 
         UUID currentUserId = currentUser.getId();
-        UUID taskCreatorId = tasks.get().getCreatedBy(); // Use .getCreatedBy().getId() if mapped as @ManyToOne User
+        UUID taskCreatorId = task.getCreatedBy();
 
         if (!Objects.equals(currentUserId, taskCreatorId)) {
             log.warn("Unauthorized delete attempt on task {}: currentUserId={} does not match createdBy={}",
-                    tasks.get().getId(), currentUserId, taskCreatorId);
-            throw new IllegalArgumentException("You can not delete this task");
+                    task.getId(), currentUserId, taskCreatorId);
+            throw new AccessDeniedException("You cannot delete this task");
         }
 
         taskRepository.deleteById(taskId);
     }
+
 
     public Page<TaskResponse> getAllTask(int page, int size, String sortBy, String sortDir, TaskStatus status) {
 

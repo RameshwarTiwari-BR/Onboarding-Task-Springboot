@@ -1,12 +1,12 @@
-package com.learning.springbootonboarding.day12.service;
+package com.learning.springbootonboarding.weekThreeFourFive.service;
 
-import com.learning.springbootonboarding.day12.dto.AddProjectMemberRequest;
-import com.learning.springbootonboarding.day12.dto.ProjectMemberResponse;
-import com.learning.springbootonboarding.day12.model.ProjectMember;
-import com.learning.springbootonboarding.day12.model.ProjectRole;
-import com.learning.springbootonboarding.day12.model.User;
-import com.learning.springbootonboarding.day12.repository.ProjectMemberRepository;
-import com.learning.springbootonboarding.day12.repository.UserRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.AddProjectMemberRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.ProjectMemberResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.ProjectMember;
+import com.learning.springbootonboarding.weekThreeFourFive.model.ProjectRole;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.ProjectMemberRepository;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

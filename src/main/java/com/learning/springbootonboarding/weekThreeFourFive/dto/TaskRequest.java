@@ -1,7 +1,7 @@
-package com.learning.springbootonboarding.day12.dto;
+package com.learning.springbootonboarding.weekThreeFourFive.dto;
 
-import com.learning.springbootonboarding.day12.model.TaskPriority;
-import com.learning.springbootonboarding.day12.model.TaskStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.model.TaskPriority;
+import com.learning.springbootonboarding.weekThreeFourFive.model.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;

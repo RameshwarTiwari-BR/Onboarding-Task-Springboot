@@ -1,9 +1,8 @@
-package com.learning.springbootonboarding.day12.dto;
+package com.learning.springbootonboarding.weekThreeFourFive.dto;
 
-import com.learning.springbootonboarding.day12.model.ProjectRole;
+import com.learning.springbootonboarding.weekThreeFourFive.model.ProjectRole;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record ProjectMemberResponse(

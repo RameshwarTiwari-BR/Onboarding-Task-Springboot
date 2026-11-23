@@ -1,17 +1,16 @@
-package com.learning.springbootonboarding.day12.controller;
+package com.learning.springbootonboarding.weekThreeFourFive.controller;
 
 import com.learning.springbootonboarding.constants.ApiEndPoints;
-import com.learning.springbootonboarding.day12.dto.TaskRequest;
-import com.learning.springbootonboarding.day12.dto.TaskResponse;
-import com.learning.springbootonboarding.day12.model.TaskStatus;
-import com.learning.springbootonboarding.day12.service.TaskService;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskRequest;
+import com.learning.springbootonboarding.weekThreeFourFive.dto.TaskResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.TaskStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.learning.springbootonboarding.day12.model.*;
 
 import java.util.List;
 import java.util.UUID;

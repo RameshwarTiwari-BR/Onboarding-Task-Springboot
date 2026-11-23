@@ -1,7 +1,7 @@
-package com.learning.springbootonboarding.day12.repository;
+package com.learning.springbootonboarding.weekThreeFourFive.repository;
 
-import com.learning.springbootonboarding.day12.model.Task;
-import com.learning.springbootonboarding.day12.model.TaskStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.model.Task;
+import com.learning.springbootonboarding.weekThreeFourFive.model.TaskStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
