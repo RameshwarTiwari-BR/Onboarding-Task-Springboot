@@ -5,10 +5,12 @@ import com.learning.springbootonboarding.day12.dto.TaskResponse;
 import com.learning.springbootonboarding.day12.model.Project;
 import com.learning.springbootonboarding.day12.model.Task;
 import com.learning.springbootonboarding.day12.model.TaskStatus;
+import com.learning.springbootonboarding.day12.model.User;
 import com.learning.springbootonboarding.day12.repository.ProjectRepository;
 import com.learning.springbootonboarding.day12.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,20 +19,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
-
+    private final CurrentUserService currentUserService;
 
 
     @Transactional
     public TaskResponse createTask(UUID projectId, TaskRequest request) {
+        User currentUser = currentUserService.getCurrentUser();
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
 
@@ -42,6 +49,11 @@ public class TaskService {
                 project,
                 request.dueDate()
         );
+        task.setCreatedBy(currentUser.getId());
+
+        if(request.assignedTo()==null){
+            task.setAssignedTo(currentUser.getId());
+        }
 
         Task saved = taskRepository.save(task);
         return toResponse(saved);
@@ -82,13 +94,31 @@ public class TaskService {
 
     @Transactional
     public void deleteTask(UUID taskId) {
+        User currentUser = currentUserService.getCurrentUser();
+
         if (!taskRepository.existsById(taskId)) {
             throw new EntityNotFoundException("Task not found with id: " + taskId);
         }
+//        find task
+        Optional<Task> tasks = taskRepository.findById(taskId);
+
+        UUID currentUserId = currentUser.getId();
+        UUID taskCreatorId = tasks.get().getCreatedBy(); // Use .getCreatedBy().getId() if mapped as @ManyToOne User
+
+        if (!Objects.equals(currentUserId, taskCreatorId)) {
+            log.warn("Unauthorized delete attempt on task {}: currentUserId={} does not match createdBy={}",
+                    tasks.get().getId(), currentUserId, taskCreatorId);
+            throw new IllegalArgumentException("You can not delete this task");
+        }
+
         taskRepository.deleteById(taskId);
     }
 
     public Page<TaskResponse> getAllTask(int page, int size, String sortBy, String sortDir, TaskStatus status) {
+
+        User currentUser = currentUserService.getCurrentUser();
+
+
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
 
@@ -98,10 +128,10 @@ public class TaskService {
 
         Pageable pageable = PageRequest.of(safePage, safeSize, sort);
 
-        // Filter if status is provided, otherwise return all tasks
         Page<Task> taskPage = (status != null)
-                ? taskRepository.findALlTaskByStatus(status, pageable)
-                : taskRepository.findAll(pageable);
+                ? taskRepository.findAllByStatusAndCreatedBy(status, currentUser.getId(), pageable)
+                : taskRepository.findAllByCreatedBy(currentUser.getId(), pageable);
+
 
         return taskPage.map(this::toResponse);
     }
@@ -116,7 +146,9 @@ public class TaskService {
                 task.getPriority(),
                 task.getProject().getId(),
                 task.getCreatedAt(),
-                task.getDueDate()
+                task.getDueDate(),
+                task.getAssignedTo(),
+                task.getCreatedBy()
         );
     }
 }

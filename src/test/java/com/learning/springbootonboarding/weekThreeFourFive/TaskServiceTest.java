@@ -3,12 +3,10 @@ package com.learning.springbootonboarding.day12;
 
 import com.learning.springbootonboarding.day12.dto.TaskRequest;
 import com.learning.springbootonboarding.day12.dto.TaskResponse;
-import com.learning.springbootonboarding.day12.model.Project;
-import com.learning.springbootonboarding.day12.model.Task;
-import com.learning.springbootonboarding.day12.model.TaskPriority;
-import com.learning.springbootonboarding.day12.model.TaskStatus;
+import com.learning.springbootonboarding.day12.model.*;
 import com.learning.springbootonboarding.day12.repository.ProjectRepository;
 import com.learning.springbootonboarding.day12.repository.TaskRepository;
+import com.learning.springbootonboarding.day12.service.CurrentUserService;
 import com.learning.springbootonboarding.day12.service.TaskService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -36,18 +34,25 @@ class TaskServiceTest {
     @Mock
     private ProjectRepository projectRepository;
 
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private TaskService taskService;
+
 
     // ==================== CREATE TESTS ====================
 
     @Test
     @DisplayName("Create Task - Success when Project exists")
     void createTask_Success() {
-
         // Arrange
         UUID projectId = UUID.randomUUID();
         UUID taskId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        User mockUser = new User("dev@example.com", "Dev", "User");
+        mockUser.setId(userId);
 
         Project project = new Project("Backend API");
         project.setId(projectId);
@@ -57,7 +62,8 @@ class TaskServiceTest {
                 "Cover service layer with Mockito",
                 TaskStatus.PENDING,
                 TaskPriority.HIGH,
-                Instant.now().plus(3, ChronoUnit.DAYS)
+                Instant.now().plus(3, ChronoUnit.DAYS),
+                userId
         );
 
         Task savedTask = new Task(
@@ -68,15 +74,13 @@ class TaskServiceTest {
                 project,
                 request.dueDate()
         );
-
         savedTask.setId(taskId);
         savedTask.setCreatedAt(Instant.now());
 
-        when(projectRepository.findById(projectId))
-                .thenReturn(Optional.of(project));
+        when(currentUserService.getCurrentUser()).thenReturn(mockUser);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
-//        when(taskRepository.save(any(Task.class)))
-//                .thenReturn(savedTask);
+        when(taskRepository.save(any(Task.class))).thenReturn(savedTask);
 
         // Act
         TaskResponse response = taskService.createTask(projectId, request);
@@ -87,26 +91,31 @@ class TaskServiceTest {
         assertEquals("Write Unit Tests", response.title());
         assertEquals(projectId, response.projectId());
 
-//        verify(taskRepository, times(1)).save(any(Task.class));
+        verify(taskRepository, times(1)).save(any(Task.class));
     }
+
 
     @Test
     @DisplayName("Create Task - Rejected when parent Project ID does not exist")
     void createTask_ProjectNotFound_ThrowsException() {
-
         // Arrange
         UUID missingProjectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        User mockUser = new User("dev@example.com", "Dev", "User");
+        mockUser.setId(userId);
 
         TaskRequest request = new TaskRequest(
                 "Write Unit Tests",
                 "Description",
                 TaskStatus.PENDING,
                 TaskPriority.MEDIUM,
-                Instant.now().plus(1, ChronoUnit.DAYS)
+                Instant.now().plus(1, ChronoUnit.DAYS),
+                UUID.randomUUID()
         );
 
-        when(projectRepository.findById(missingProjectId))
-                .thenReturn(Optional.empty());
+        when(currentUserService.getCurrentUser()).thenReturn(mockUser);
+        when(projectRepository.findById(missingProjectId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(
@@ -116,6 +125,7 @@ class TaskServiceTest {
 
         verify(taskRepository, never()).save(any());
     }
+
 
     // ==================== UPDATE TESTS ====================
 
@@ -145,7 +155,8 @@ class TaskServiceTest {
                 "Updated Desc",
                 TaskStatus.COMPLETED,
                 TaskPriority.HIGH,
-                Instant.now().plus(5, ChronoUnit.DAYS)
+                Instant.now().plus(5, ChronoUnit.DAYS),
+                UUID.randomUUID()
         );
 
         when(taskRepository.findById(taskId))
@@ -179,7 +190,8 @@ class TaskServiceTest {
                 "Updated Desc",
                 TaskStatus.COMPLETED,
                 TaskPriority.HIGH,
-                Instant.now().plus(5, ChronoUnit.DAYS)
+                Instant.now().plus(5, ChronoUnit.DAYS),
+                missingTaskId
         );
 
         when(taskRepository.findById(missingTaskId))

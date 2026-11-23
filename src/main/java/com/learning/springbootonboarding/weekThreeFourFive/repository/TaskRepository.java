@@ -3,19 +3,19 @@ package com.learning.springbootonboarding.day12.repository;
 import com.learning.springbootonboarding.day12.model.Task;
 import com.learning.springbootonboarding.day12.model.TaskStatus;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
-    // Spring Data JPA auto-generates: SELECT * FROM tasks WHERE project_id = ?
     List<Task> findByProjectId(UUID projectId);
 
-    // Spring Data JPA auto-generates: SELECT * FROM tasks WHERE project_id = ? AND status = ?
     List<Task> findByProjectIdAndStatus(UUID projectId, TaskStatus status);
 
-    Page<Task> findALlTaskByStatus(TaskStatus status, Pageable pageable);
+    Page<Task> findAllByStatusAndCreatedBy(TaskStatus status, UUID createdBy, Pageable pageable);
 
+    Page<Task> findAllByCreatedBy(UUID createdBy, Pageable pageable);
 }

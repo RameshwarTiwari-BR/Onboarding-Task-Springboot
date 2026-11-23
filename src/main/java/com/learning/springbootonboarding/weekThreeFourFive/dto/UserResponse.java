@@ -11,5 +11,6 @@ public record UserResponse(
         String firstName,
         String lastName,
         UserStatus status,
-        Instant createdAt
+        Instant createdAt,
+        TokenResponse tokens
 ) {}
