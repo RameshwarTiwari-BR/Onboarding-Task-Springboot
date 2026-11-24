@@ -18,5 +18,8 @@ public class ApiEndPoints {
     public static final String AUTH_SIGNUP_V1 = AUTH_V1 + "/signup";
     public static final String AUTH_LOGIN_V1 = AUTH_V1 + "/login";
     public static final String AUTH_LOGOUT_V1 = AUTH_V1 + "/logout";
+    public static final String AUTH_REFRESH_TOKEN = AUTH_V1 + "/refresh";
+
+    public static final String USERS = V1 + "/users";
 
 }

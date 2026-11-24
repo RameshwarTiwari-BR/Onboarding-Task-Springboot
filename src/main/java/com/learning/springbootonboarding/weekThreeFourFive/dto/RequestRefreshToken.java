@@ -1,4 +1,8 @@
 package com.learning.springbootonboarding.weekThreeFourFive.dto;
 
-public class RequestRefreshToken {
-}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record RequestRefreshToken (
+        @JsonProperty("refresh_token") String refreshToken
+)
+{ }

@@ -1,0 +1,9 @@
+@import './base.css';
+
+/* Remove max-width: 1280px and grid/flex centering from #app */
+#app {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}

@@ -155,4 +155,34 @@ public class KeycloakAdminService {
         }
     }
 
+    public TokenResponse refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Refresh token is required"
+            );
+        }
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "refresh_token");
+        formData.add("client_id", loginClientId);
+        formData.add("refresh_token", refreshToken.trim());
+
+        try {
+            return publicRestClient.post()
+                    .uri("/protocol/openid-connect/token")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(formData)
+                    .retrieve()
+                    .body(TokenResponse.class);
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.BadRequest ex) {
+            log.debug("Keycloak token refresh failed: {}", ex.getResponseBodyAsString());
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Refresh token expired or invalid, please login again"
+            );
+        }
+    }
+
+
 }

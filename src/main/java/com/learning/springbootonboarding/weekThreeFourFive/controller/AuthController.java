@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -52,4 +54,17 @@ public class AuthController {
         }
         return  ResponseEntity.noContent().build();
     }
+
+    @PostMapping(ApiEndPoints.AUTH_REFRESH_TOKEN)
+    public ResponseEntity<TokenResponse> refreshToken(@RequestBody RequestRefreshToken request){
+        TokenResponse response = keycloakAdminService.refreshToken(request.refreshToken());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+//    Get all users
+    @GetMapping(ApiEndPoints.USERS)
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
 }

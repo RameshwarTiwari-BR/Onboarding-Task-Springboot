@@ -33,9 +33,11 @@ logs/
 ### VS Code ###
 .vscode/
 
-# env
+# Environment variables
 .env
-./.env
+.env.*
+!.env.example
+
 
 ./KeyCloakDetails.md
 ./KeyCloak.md

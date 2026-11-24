@@ -54,6 +54,8 @@ public class TaskService {
 
         if(request.assignedTo()==null){
             task.setAssignedTo(currentUser.getId());
+        }else {
+            task.setAssignedTo(request.assignedTo());
         }
 
         Task saved = taskRepository.save(task);
@@ -61,6 +63,8 @@ public class TaskService {
     }
 
     public List<TaskResponse> getTasksByProject(UUID projectId, TaskStatus status) {
+        User currentUser = currentUserService.getCurrentUser();
+
         if (!projectRepository.existsById(projectId)) {
             throw new EntityNotFoundException("Project not found with id: " + projectId);
         }
@@ -79,6 +83,8 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + taskId));
 
+        User currentUser = currentUserService.getCurrentUser();
+
         task.setTitle(request.title());
         task.setDescription(request.description());
         if (request.status() != null) {
@@ -86,6 +92,11 @@ public class TaskService {
         }
         if (request.priority() != null) {
             task.setPriority(request.priority());
+        }
+        if(request.assignedTo()==null){
+            task.setAssignedTo(currentUser.getId());
+        }else {
+            task.setAssignedTo(request.assignedTo());
         }
         task.setDueDate(request.dueDate());
 
@@ -114,9 +125,8 @@ public class TaskService {
 
 
     public Page<TaskResponse> getAllTask(int page, int size, String sortBy, String sortDir, TaskStatus status) {
-
         User currentUser = currentUserService.getCurrentUser();
-
+        UUID userId = currentUser.getId();
 
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
@@ -128,12 +138,12 @@ public class TaskService {
         Pageable pageable = PageRequest.of(safePage, safeSize, sort);
 
         Page<Task> taskPage = (status != null)
-                ? taskRepository.findAllByStatusAndCreatedBy(status, currentUser.getId(), pageable)
-                : taskRepository.findAllByCreatedBy(currentUser.getId(), pageable);
-
+                ? taskRepository.findAllUserTasksByStatus(userId, status, pageable)
+                : taskRepository.findAllUserTasks(userId, pageable);
 
         return taskPage.map(this::toResponse);
     }
+
 
 
     private TaskResponse toResponse(Task task) {
