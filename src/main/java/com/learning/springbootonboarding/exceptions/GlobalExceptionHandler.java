@@ -2,12 +2,13 @@ package com.learning.springbootonboarding.exceptions;
 
 import com.learning.springbootonboarding.weekThreeFourFive.dto.ApiErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,153 +16,101 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. Catch validation errors triggered by @Valid (MethodArgumentNotValidException)
+    // 1. Validation errors (@Valid) -> 400
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> fieldErrors = new HashMap<>();
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
 
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            fieldErrors.put(fieldName, errorMessage);
-        });
-
-        String requestId = MDC.get("requestId");
-
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                HttpStatus.BAD_REQUEST.value(), // 400
-                "Validation Failed",
-                LocalDateTime.now().toString(),
-                requestId,
-                fieldErrors
+        // Use getFieldErrors() instead of getAllErrors() to avoid ClassCastException on class-level constraints
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.merge(
+                        error.getField(),
+                        error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
+                        (existing, replacement) -> existing + "; " + replacement
+                )
         );
 
-        return new ResponseEntity<>(errorPayload, HttpStatus.BAD_REQUEST);
+        log.warn("Validation failed on {} field(s): {}", fieldErrors.size(), fieldErrors.keySet());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Validation Failed", fieldErrors);
     }
 
-    // 2. Catch Database Unique Constraint / Integrity Errors
+    // 2. Database Unique Constraint / Integrity Errors -> 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        String requestId = MDC.get("requestId");
-        Map<String, String> fieldErrors = new HashMap<>();
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
         String message = "Database constraint violation";
 
-        // Check if the error came from our specific unique constraint
         if (ex.getMessage() != null && ex.getMessage().contains("uk_project_name")) {
             message = "Duplicate project name";
             fieldErrors.put("name", "Project name already exists");
         }
 
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                HttpStatus.CONFLICT.value(), // 409
-                message,
-                LocalDateTime.now().toString(),
-                requestId,
-                fieldErrors.isEmpty() ? null : fieldErrors
-        );
-
-        return new ResponseEntity<>(errorPayload, HttpStatus.CONFLICT);
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return buildResponse(HttpStatus.CONFLICT, message, fieldErrors.isEmpty() ? null : fieldErrors);
     }
 
-    // 3. Catch EntityNotFoundException (missing Project or Task IDs) -> 404 Not Found
+    // 3. EntityNotFoundException -> 404
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
-        String requestId = MDC.get("requestId");
-
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                HttpStatus.NOT_FOUND.value(), // 404
-                ex.getMessage(),
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
-
-        return new ResponseEntity<>(errorPayload, HttpStatus.NOT_FOUND);
+        log.warn("Entity not found: {}", ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
-
-    // 4. IllegalArgumentException
+    // 4. IllegalArgumentException -> 400
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex){
-        String requestId = MDC.get("requestId");
-
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
-        return new ResponseEntity<>(errorPayload, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.warn("Illegal argument: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
 
-    // 5. Catch ResponseStatusException (401, 403, 409, etc.) and preserve its exact HTTP status
+    // 5. ResponseStatusException -> Preserves exact HTTP status
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
-        String requestId = MDC.get("requestId");
         String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
-
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                ex.getStatusCode().value(),
-                message,
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
-
-        return new ResponseEntity<>(errorPayload, ex.getStatusCode());
+        log.warn("ResponseStatusException [{}]: {}", ex.getStatusCode().value(), message);
+        return buildResponse(ex.getStatusCode(), message, null);
     }
 
-
+    // 6. Keycloak / External RestClient errors -> Logs full error internally, masks details from client
     @ExceptionHandler(RestClientResponseException.class)
     public ResponseEntity<ApiErrorResponse> handleRestClientException(RestClientResponseException ex) {
-        String requestId = MDC.get("requestId");
-
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                ex.getStatusCode().value(),
-                "Authentication service error",
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
-
-        return new ResponseEntity<>(errorPayload, ex.getStatusCode());
+        log.error("External auth service error [{}]: {}", ex.getStatusCode().value(), ex.getResponseBodyAsString(), ex);
+        return buildResponse(ex.getStatusCode(), "Authentication service error", null);
     }
 
-
+    // 7. Spring Security AccessDeniedException -> 403
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException ex){
-        String requestId = MDC.get("requestId");
-
-        ApiErrorResponse errorResponse = new ApiErrorResponse(
-               HttpStatus.FORBIDDEN.value(),
-                "Forbidden",
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", null);
     }
 
-
-    // 4. Catch generic fallback system errors (RuntimeException, Database crashes)
+    // 8. Fallback for all unhandled exceptions -> 500 (NEVER expose raw ex.getMessage() to clients)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericErrors(Exception ex) {
-        String requestId = MDC.get("requestId");
-        ApiErrorResponse errorPayload = new ApiErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), // 500
-                ex.getMessage(),
-                LocalDateTime.now().toString(),
-                requestId,
-                null
-        );
+        log.error("Unhandled internal server error", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected internal error occurred", null);
+    }
 
-        return new ResponseEntity<>(errorPayload, HttpStatus.INTERNAL_SERVER_ERROR);
+    private ResponseEntity<ApiErrorResponse> buildResponse(
+            HttpStatusCode status,
+            String message,
+            Map<String, String> fieldErrors) {
+
+        ApiErrorResponse errorPayload = new ApiErrorResponse(
+                status.value(),
+                message,
+                LocalDateTime.now().toString(),
+                MDC.get("requestId"),
+                fieldErrors
+        );
+        return new ResponseEntity<>(errorPayload, status);
     }
 }

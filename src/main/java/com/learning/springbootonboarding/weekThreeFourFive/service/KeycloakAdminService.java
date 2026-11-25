@@ -2,6 +2,9 @@ package com.learning.springbootonboarding.weekThreeFourFive.service;
 
 import com.learning.springbootonboarding.weekThreeFourFive.dto.CreateUserDto;
 import com.learning.springbootonboarding.weekThreeFourFive.dto.TokenResponse;
+import com.learning.springbootonboarding.weekThreeFourFive.model.User;
+import com.learning.springbootonboarding.weekThreeFourFive.model.UserStatus;
+import com.learning.springbootonboarding.weekThreeFourFive.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,13 +31,14 @@ public class KeycloakAdminService {
     private final RestClient publicRestClient;
     private final String realm;
     private final String loginClientId;
+    private final UserRepository userRepository;
 
     public KeycloakAdminService(
             OAuth2AuthorizedClientManager authorizedClientManager,
             @Value("${keycloak.admin.base-url}") String baseUrl,
             @Value("${keycloak.admin.realm}") String realm,
             @Value("${keycloak.admin.issuer}") String issuer,
-            @Value("${keycloak.admin.login-client-id}") String loginClientId) {
+            @Value("${keycloak.admin.login-client-id}") String loginClientId, UserRepository userRepository, CurrentUserService currentUserService) {
 
         this.realm = realm;
         this.loginClientId = loginClientId;
@@ -51,6 +56,7 @@ public class KeycloakAdminService {
         this.publicRestClient = RestClient.builder()
                 .baseUrl(issuer)
                 .build();
+        this.userRepository = userRepository;
     }
 
 
@@ -134,6 +140,18 @@ public class KeycloakAdminService {
 
 
     public TokenResponse fetchUserToken(String email, String password) {
+
+    //  Check account is action or disabled then fetch token
+
+        boolean isActive = userRepository.findStatusByEmail(email)
+                .map(status -> status == UserStatus.ACTIVE)
+                .orElse(false);
+
+        if (!isActive) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your account is not active");
+        }
+
+
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "password");
         formData.add("client_id", loginClientId);

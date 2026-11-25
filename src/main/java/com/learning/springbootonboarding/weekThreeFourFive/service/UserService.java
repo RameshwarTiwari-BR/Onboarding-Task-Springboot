@@ -24,6 +24,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserIdentityRepository userIdentityRepository;
     private final KeycloakAdminService keycloakAdminService;
+    private final CurrentUserService currentUserService;
 
     @Value("${keycloak.admin.issuer}")
     private String keycloakIssuer;

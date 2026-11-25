@@ -2,6 +2,7 @@ package com.learning.springbootonboarding.config;
 
 import com.learning.springbootonboarding.constants.ApiEndPoints;
 import com.learning.springbootonboarding.filter.TokenBlacklistFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,10 +16,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenBlacklistFilter tokenBlacklistFilter)
@@ -67,7 +72,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(Collections.singletonList(allowedOrigins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         config.setAllowCredentials(true);
