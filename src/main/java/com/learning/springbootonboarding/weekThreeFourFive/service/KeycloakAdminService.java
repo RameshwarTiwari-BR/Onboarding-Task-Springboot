@@ -52,9 +52,13 @@ public class KeycloakAdminService {
                 .requestInterceptor(oauth2Interceptor)
                 .build();
 
+        // Extract host (e.g. "localhost:8081") from issuer URI so Keycloak stamps the public 'iss' claim
+        String publicHost = URI.create(issuer).getAuthority();
+
         // Unauthenticated client for user token exchange
         this.publicRestClient = RestClient.builder()
-                .baseUrl(issuer)
+                .baseUrl(baseUrl + "/realms/" + realm)
+                .defaultHeader("Host", publicHost)
                 .build();
         this.userRepository = userRepository;
     }

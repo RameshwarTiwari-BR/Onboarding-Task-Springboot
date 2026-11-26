@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+.env
+logs/
+*.log
+.idea/
+*.iml
+onboarding-task-frontend/
+
+.env.docker
+.env.backup
